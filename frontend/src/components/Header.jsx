@@ -56,7 +56,7 @@ export default function Header({ backendHealth, onTestConnection, isPinging }) {
             className="gl-btn gl-btn-ghost gl-btn-sm"
             onClick={onTestConnection}
             disabled={isPinging}
-            title="Ping Spring Boot REST Service at localhost:8080"
+            title="Ping Spring Boot REST Service"
           >
             {isPinging ? 'Pinging...' : '⚡ Ping API'}
           </button>

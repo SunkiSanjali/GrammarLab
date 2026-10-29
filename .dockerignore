@@ -1,0 +1,16 @@
+.git
+.gitignore
+.idea
+.vscode
+**/.DS_Store
+**/Thumbs.db
+
+# Frontend artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/*.log
+
+# Backend artifacts
+backend/target/
+backend/*.log
+backend/src/main/resources/static/

@@ -3,7 +3,8 @@
  * Connects React frontend with the Spring Boot compiler analysis backend.
  */
 
-const API_BASE = '/api';
+const RAW_BASE = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE = RAW_BASE ? `${RAW_BASE.replace(/\/+$/, '')}/api` : '/api';
 
 export const grammarApi = {
   /**

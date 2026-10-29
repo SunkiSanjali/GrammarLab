@@ -11,12 +11,13 @@ A full-stack, pedagogical workbench for grammar analysis, parsing table generati
 4. [Architecture & Technology Stack](#4-architecture--technology-stack)
 5. [Prerequisites & Installation](#5-prerequisites--installation)
 6. [Windows Commands (Run & Test)](#6-windows-commands-run--test)
-7. [REST API Reference](#7-rest-api-reference)
-8. [Textbook Example Grammars](#8-textbook-example-grammars)
-9. [Comprehensive Test Suite](#9-comprehensive-test-suite)
-10. [Known Limitations & Resource Safeguards](#10-known-limitations--resource-safeguards)
-11. [Compiler Design Laboratory Report Outline](#11-compiler-design-laboratory-report-outline)
-12. [Comprehensive Viva Examination Guide (30 Questions & Answers)](#12-comprehensive-viva-examination-guide-30-questions--answers)
+7. [Production Deployment (Docker & Cloud)](#7-production-deployment-docker--cloud)
+8. [REST API Reference](#8-rest-api-reference)
+9. [Textbook Example Grammars](#9-textbook-example-grammars)
+10. [Comprehensive Test Suite](#10-comprehensive-test-suite)
+11. [Known Limitations & Resource Safeguards](#11-known-limitations--resource-safeguards)
+12. [Compiler Design Laboratory Report Outline](#12-compiler-design-laboratory-report-outline)
+13. [Comprehensive Viva Examination Guide (30 Questions & Answers)](#13-comprehensive-viva-examination-guide-30-questions--answers)
 
 ---
 
@@ -166,7 +167,7 @@ cd backend
 mvn spring-boot:run
 ```
 *The backend starts at `http://localhost:8080`.*
-*Health check:* `http://localhost:8080/api/grammar/health`
+*Health check:* `http://localhost:8080/api/health`
 
 ### Terminal 2: Start Frontend (Vite Dev Server)
 ```powershell
@@ -178,30 +179,53 @@ npm run dev
 
 ### Run All Backend Automated Tests
 ```powershell
-cd backend
-mvn test
+mvn test -f backend/pom.xml
 ```
 *Output: Tests run: 103, Failures: 0, Errors: 0, Skipped: 0.*
 
-### Build Production JAR
+### Build Production JAR (Standalone Backend)
 ```powershell
-cd backend
-mvn package -DskipTests
+mvn clean package -DskipTests -f backend/pom.xml
 ```
-*Output: `target/grammarlab-backend-1.0.0-SNAPSHOT.jar`.*
+*Output: `backend/target/grammarlab-backend-1.0.0-SNAPSHOT.jar`.*
 
-### Build Production Frontend Bundle
+### Build Production Frontend Bundle (Standalone Frontend)
 ```powershell
 cd frontend
 npm run build
 ```
-*Output: Production assets generated in `frontend/dist/` in ~1.1s.*
+*Output: Production assets generated in `frontend/dist/`.*
 
 ---
 
-## 7. REST API Reference
+## 7. Production Deployment (Docker Single-Container)
 
-All endpoints accept and return `application/json`. CORS is enabled for `http://localhost:5173`.
+GrammarLab includes a production multi-stage [Dockerfile](file:///c:/Users/sanja/OneDrive/Desktop/GrammarLab/Dockerfile) that builds the React frontend, embeds the static assets directly into the Spring Boot JAR, and runs on a lightweight Eclipse Temurin Java 21 JRE runtime.
+
+### 1. Build and Run Locally with Docker
+```bash
+# Build the unified production container
+docker build -t grammarlab .
+
+# Run the container (binds both UI and REST API to port 8080)
+docker run -p 8080:8080 -e PORT=8080 grammarlab
+```
+*Access both the workbench interface and API at `http://localhost:8080`.*
+
+### 2. Deploy to Cloud PaaS (Render, Railway, Fly.io, AWS)
+- **Repository**: [https://github.com/SunkiSanjali/GrammarLab](https://github.com/SunkiSanjali/GrammarLab)
+- **Deployment Type**: Docker Web Service
+- **Build Command / Context**: Root directory (`.`) using `Dockerfile`
+- **Environment Variables**:
+  - `PORT`: Automatically assigned by cloud host (defaults to `8080`)
+  - `JAVA_OPTS`: `-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0`
+  - `CORS_ALLOWED_ORIGINS`: Optional (defaults to `http://localhost:5173,http://127.0.0.1:5173`)
+
+---
+
+## 8. REST API Reference
+
+All endpoints accept and return `application/json`. CORS is configurable via `CORS_ALLOWED_ORIGINS` (defaults to `http://localhost:5173`).
 
 ### 1. Grammar Validation
 - **POST** `/api/grammar/validate`
@@ -251,7 +275,7 @@ All endpoints accept and return `application/json`. CORS is enabled for `http://
 
 ---
 
-## 8. Textbook Example Grammars
+## 9. Textbook Example Grammars
 
 ### Grammar 1: Classic Arithmetic Expressions (SLR(1), CLR(1), LALR(1))
 ```
@@ -306,7 +330,7 @@ B -> e
 
 ---
 
-## 9. Comprehensive Test Suite
+## 10. Comprehensive Test Suite
 
 All 103 automated tests are verified passing:
 
@@ -328,7 +352,7 @@ All 103 automated tests are verified passing:
 
 ---
 
-## 10. Known Limitations & Resource Safeguards
+## 11. Known Limitations & Resource Safeguards
 
 1. **Cycle Safeguards**: Grammars with unproductive cycles or infinite left-recursion loops are capped at a maximum of 500 parsing trace steps to prevent denial-of-service or infinite loops.
 2. **Deterministic Fallback in Ambiguous Parsers**: If a user runs simulation on a grammar with unresolved conflicts, the simulator deterministically prioritizes `accept > shift > first reduce` to complete the trace while prominently alerting the user of the table conflicts.
@@ -337,7 +361,7 @@ All 103 automated tests are verified passing:
 
 ---
 
-## 11. Compiler Design Laboratory Report Outline
+## 12. Compiler Design Laboratory Report Outline
 
 ### 1. Abstract
 Comprehensive study and implementation of top-down and bottom-up parsing techniques in compiler design. Design of a full-stack interactive workbench supporting LL(1), LR(0), SLR(1), CLR(1), and LALR(1).
@@ -383,7 +407,7 @@ Comprehensive study and implementation of top-down and bottom-up parsing techniq
 
 ---
 
-## 12. Comprehensive Viva Examination Guide (30 Questions & Answers)
+## 13. Comprehensive Viva Examination Guide (30 Questions & Answers)
 
 ### Q1. What is the fundamental difference between top-down and bottom-up parsing?
 **Answer**: Top-down parsers (e.g., LL(1)) construct the parse tree starting from the root (start symbol) down to the leaves (input tokens) by performing leftmost derivations. Bottom-up parsers (e.g., LR) construct the tree starting from the leaves up to the root by identifying "handles" and applying reductions, corresponding to the reverse of a rightmost derivation.
